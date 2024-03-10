@@ -5,7 +5,7 @@ def fileuploader_callback():
     print( st.session_state)
 
 
-uploaded_vectors = embeddings.getUploadedFiles()
+uploaded_vectors = embeddings.get_all_ids_from_index()
 
 
 
@@ -28,12 +28,13 @@ for uploaded_file in uploaded_files:
  
 
 st.subheader("Uploaded documents 📚")
-for vector in uploaded_vectors:
+for vector in uploaded_vectors.copy():
     col1, col2 = st.columns([4, 1])
     with col1:
         st.write(vector)
     with col2:
         if st.button("Delete", key=vector):
             embeddings.deleteNamespace(vector)
+            uploaded_vectors.remove(vector)
             st.rerun()
 

@@ -6,6 +6,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from dotenv import load_dotenv
 import os
+import numpy as np
+
 
 load_dotenv()
 
@@ -27,14 +29,12 @@ index = pc.Index(index_name)
 # Chunk size
 chunk_size = 1000
 
-# Define a function to preprocess text
 def preprocess_text(text):
     # Replace consecutive spaces, newlines, and tabs
     text = re.sub(r'\s+', ' ', text)
     return text
 
 def process_pdf(file_path):
-    # create a loader
     loader = PyPDFLoader(file_path)
     # load your data
     data = loader.load()
@@ -45,7 +45,6 @@ def process_pdf(file_path):
     texts = [str(doc) for doc in documents]
     return texts
 
-# Define a function to create embeddings
 def create_embeddings(texts):
    embeddings = []
    for text in texts:
@@ -56,12 +55,22 @@ def create_embeddings(texts):
         })
    return embeddings
 
-# Define a function to upsert embeddings to Pinecone
-def getUploadedFiles():
-    stats = index.describe_index_stats()
-    namespace_map = stats['namespaces']
-    print(namespace_map)
-    return namespace_map
+def get_ids_from_query(index,input_vector):
+  results = index.query(vector=input_vector, top_k=10000,include_values=False)
+  ids = set()
+  for result in results['matches']:
+    ids.add(result['id'])
+  return ids
+
+def get_all_ids_from_index():
+  num_vectors = index.describe_index_stats()["namespaces"][""]['vector_count']
+  all_ids = set()
+  while len(all_ids) < num_vectors:
+    input_vector = np.random.rand(1536).tolist()
+    ids = get_ids_from_query(index,input_vector)
+    all_ids.update(ids)
+
+  return all_ids
 
 def upsert_embeddings_to_pinecone(embeddings, name):
     vectors = []
@@ -74,13 +83,10 @@ def upsert_embeddings_to_pinecone(embeddings, name):
                 "text": embedding["text"]
             }
         })
-    response = index.upsert(vectors)
-    files = getUploadedFiles()
-    files[name] = response["upserted_count"]
+    index.upsert(vectors)
+    files = get_all_ids_from_index()
+    files.add(name)
     return files 
 
-
-
-
-def deleteNamespace(name):
-    index.delete(delete_all=True, namespace=name) 
+def deleteNamespace(id):
+    index.delete(ids=[id], namespace="") 
