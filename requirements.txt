@@ -1,0 +1,8 @@
+pdfplumber
+openai
+pinecone-client
+langchain
+streamlit
+langchain_community
+langchain_text_splitters
+load_dotenv
