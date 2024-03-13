@@ -2,6 +2,9 @@
 
 PDF Embedding Uploader is a tool that automates the process of extracting text from PDF files, generating embeddings using OpenAI's Text Embedding model, and uploading them to Pinecone for efficient similarity search.
 
+<img width="1196" alt="Screenshot 2024-03-13 at 07 23 52" src="https://github.com/adamalmqvist/pinecone-pdf-embedder/assets/70197981/32ab536d-f159-405f-9a43-0f71a36700be">
+
+
 ## 🚀 Getting Started
 
 To get started with PDF Embedding Uploader locally, follow these steps:
